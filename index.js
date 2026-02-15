@@ -22,7 +22,7 @@ app.use((req, res, next) => {
     // if (secret !== process.env.INTERNAL_SECRET) {
     //     return res.status(403).json({ error: "Unauthorized" });
     // }
-    // next();
+    next();
 });
 
 const GEMINI_API_KEY = process.env.GEMINI_API_KEY;
