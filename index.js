@@ -74,12 +74,15 @@ app.post("/analyze-meal", async (req, res) => {
             });
         }
 
-        const result = await model.generateContent([
-            {
+        const result = await model.generateContent({
+            contents: [{
                 role: "user",
-                parts,
-            },
-        ]);
+                parts
+            }],
+            generationConfig: {
+                responseMimeType: "application/json"
+            }
+        });
 
         const text = result.response.text();
 
@@ -88,12 +91,12 @@ app.post("/analyze-meal", async (req, res) => {
         }
 
         // 🔥 Extract JSON safely
-        const jsonMatch = text.match(/\{[\s\S]*\}/);
-        if (!jsonMatch) {
-            throw new Error("AI response not valid JSON");
-        }
+        // const jsonMatch = text.match(/\{[\s\S]*\}/);
+        // if (!jsonMatch) {
+        //     throw new Error("AI response not valid JSON");
+        // }
 
-        const analysis = JSON.parse(jsonMatch[0]);
+        const analysis = JSON.parse(text);
 
         // ✅ Return clean JSON (NO wrappers)
         res.json({
