@@ -34,8 +34,6 @@ if (!GEMINI_API_KEY) {
 }
 
 const genAI = new GoogleGenerativeAI(GEMINI_API_KEY);
-const models = await genAI.listModels();
-console.log(models);
 
 
 app.post("/analyze-meal", async (req, res) => {
