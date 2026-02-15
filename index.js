@@ -26,7 +26,7 @@ app.use((req, res, next) => {
 });
 
 const GEMINI_API_KEY = process.env.GEMINI_API_KEY;
-const MODEL_NAME = "gemini-1.5-flash-latest";
+const MODEL_NAME = "gemini-3-flash-preview";
 
 if (!GEMINI_API_KEY) {
     console.error("❌ GEMINI_API_KEY missing");
@@ -34,6 +34,9 @@ if (!GEMINI_API_KEY) {
 }
 
 const genAI = new GoogleGenerativeAI(GEMINI_API_KEY);
+const models = await genAI.listModels();
+console.log(models);
+
 
 app.post("/analyze-meal", async (req, res) => {
     try {
