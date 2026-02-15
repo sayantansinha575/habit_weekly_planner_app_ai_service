@@ -26,7 +26,7 @@ app.use((req, res, next) => {
 });
 
 const GEMINI_API_KEY = process.env.GEMINI_API_KEY;
-const MODEL_NAME = "gemini-1.5-flash";
+const MODEL_NAME = "gemini-1.5-flash-latest";
 
 if (!GEMINI_API_KEY) {
     console.error("❌ GEMINI_API_KEY missing");
