@@ -46,18 +46,29 @@ app.post("/analyze-meal", async (req, res) => {
             });
         }
 
-        const prompt = `
-    Analyze this meal and provide nutritional information.
+            const prompt = `
+    Analyze this meal and provide nutritional information using a strict 3-step reasoning process:
+
+    Step 1: Vision detection (Identify specific food items from image and description)
+    Step 2: NLP understanding (Categorize the meal, e.g., "healthy", "fast food", etc.)
+    Step 3: Knowledge reasoning (Map items to nutritional data: e.g., chicken ≈ protein, rice ≈ carbs, broccoli ≈ fiber)
+
     If description exists: "${description || "N/A"}".
-    Return STRICT JSON ONLY:
+
+    Return ONLY a JSON object with this structure:
     {
       "calories": number,
       "protein": number,
       "carbs": number,
       "fats": number,
-      "description": "short descriptive meal name"
+      "description": "short descriptive meal name",
+      "reasoning": {
+        "step1_vision": ["item1", "item2"],
+        "step2_nlp": "meal category and context",
+        "step3_knowledge": "brief nutritional logic"
+      }
     }
-    If unsure, estimate realistically.
+    If unsure, estimate realistically based on standard portions.
     `;
 
         const model = genAI.getGenerativeModel({
@@ -91,28 +102,34 @@ app.post("/analyze-meal", async (req, res) => {
             throw new Error("Empty AI response");
         }
 
-        // 🔥 Extract JSON safely
-        // const jsonMatch = text.match(/\{[\s\S]*\}/);
-        // if (!jsonMatch) {
-        //     throw new Error("AI response not valid JSON");
-        // }
+        let analysis;
+        try {
+            analysis = JSON.parse(text);
+        } catch (parseError) {
+            console.error("Failed to parse JSON directly, attempting regex extraction:", text);
+            const jsonMatch = text.match(/\{[\s\S]*\}/);
+            if (!jsonMatch) {
+                throw new Error("AI response not valid JSON");
+            }
+            analysis = JSON.parse(jsonMatch[0]);
+        }
 
-        const analysis = JSON.parse(text);
-
-        // ✅ Return clean JSON (NO wrappers)
+        // ✅ Return clean JSON
         res.json({
             calories: Number(analysis.calories) || 0,
             protein: Number(analysis.protein) || 0,
             carbs: Number(analysis.carbs) || 0,
             fats: Number(analysis.fats) || 0,
             description: analysis.description || description || "Unknown Meal",
+            reasoning: analysis.reasoning || null
         });
 
     } catch (error) {
         console.error("AI Service Error:", error);
 
         res.status(500).json({
-            error: "AI analysis failed",
+            error: "Failed to analyze meal",
+            message: error.message
         });
     }
 });
